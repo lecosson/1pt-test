@@ -20,7 +20,7 @@ class TaoTestComponent extends HTMLElement {
         super();
 
         // load templates
-        const templates = document.getElementsByName('tao-test-template')[0].import;
+        const templates = window.document;
         this.tpls = {
             component:  templates.getElementsByClassName('tpl-component')[0].innerHTML,
             styles:     templates.getElementsByClassName('tpl-styles')[0].innerHTML,
@@ -198,20 +198,33 @@ class TaoTestComponent extends HTMLElement {
  * initialize module: register custom element in CustomElementRegistry
  */
 (function initialize() {
-    // initialization: add html template
-    const tplElement = document.createElement('link');
-    tplElement.setAttribute('rel', 'import');
-    tplElement.setAttribute('name', 'tao-test-template');
-    tplElement.setAttribute('href', './tao-test-component.html');
-    document.head.appendChild(tplElement);
 
-    window.addEventListener('load', (event) => {
-        try {
-            customElements.define("tao-test-component", TaoTestComponent);
-        } catch (e) {
-            // already defined
+    const tplUrl = './tao-test-component.html';
+
+    // initialization: add html template
+    fetch(tplUrl).then(async response => {
+
+        if (response.ok) {
+            document.head.innerHTML += await response.text();
+        } else {
+            //alert("HTTP error : " + response.status);
+        }
+
+        const run = () => {
+            try {
+                customElements.define("tao-test-component", TaoTestComponent);
+            } catch (e) {
+                // already defined
+            }
+        };
+
+        if (document.readyState === 'complete') {
+            run()
+        } else {
+            window.addEventListener('load', run);
         }
     });
+
 })();
 
 
